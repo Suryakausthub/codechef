@@ -1,0 +1,92 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+
+pair<vector<ll>, vector<ll>> splitArray(const vector<ll>& arr) {
+    vector<ll> pos, neg;
+    for (const auto& val : arr) {
+        if (val >= 0) {
+            pos.push_back(val);
+        } else {
+            neg.push_back(val);
+        }
+    }
+    return {pos, neg};
+}
+
+pair<ll, ll> calculateInitialBounds(const vector<ll>& pos) {
+    ll lo = 0, hi = 0;
+    for (const auto& val : pos) {
+        lo = max(lo, val);
+        hi += val;
+    }
+    return {lo, hi};
+}
+
+bool canAchieve(ll M, const vector<ll>& pos, const vector<ll>& neg) {
+    int i = 0, j = 0;
+    int nPos = pos.size(), nNeg = neg.size();
+    ll state = 0;
+    while (i < nPos || j < nNeg) {
+        if (i < nPos && state + pos[i] <= M) {
+            state += pos[i];
+            i++;
+        } else if (j < nNeg) {
+            state += neg[j];
+            j++;
+            if (state < 0) state = 0;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+ll findMinimumThreshold(const vector<ll>& pos, const vector<ll>& neg) {
+    auto [lo, hi] = calculateInitialBounds(pos);
+    ll ans = hi;
+
+    while (lo <= hi) {
+        ll mid = lo + (hi - lo) / 2;
+        if (canAchieve(mid, pos, neg)) {
+            ans = mid;
+            hi = mid - 1;
+        } else {
+            lo = mid + 1;
+        }
+    }
+
+    return ans;
+}
+
+
+void solve() {
+    int T;
+    cin >> T;
+
+    while (T--) {
+        int N;
+        cin >> N;
+        vector<ll> arr(N);
+        for (int i = 0; i < N; i++) {
+            cin >> arr[i];
+        }
+
+        auto [pos, neg] = splitArray(arr);
+        if (pos.empty()) {
+            cout << 0 << "\n";
+            continue;
+        }
+
+        cout << findMinimumThreshold(pos, neg) << "\n";
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    solve();
+    return 0;
+}
